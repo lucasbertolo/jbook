@@ -22,14 +22,14 @@ const App = () => {
 
   const onClick = async () => {
     if (ref.current) {
-      const [outputFiles] = await ref.current.build({
+      const result = await ref.current.build({
         entryPoints: ["index.js"],
         bundle: true,
         write: false,
         plugins: [unpkgPathPlugin()],
       });
 
-      setCode(outputFiles.text);
+      setCode(result.outputFiles[0].text);
     }
   };
 
