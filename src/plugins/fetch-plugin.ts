@@ -27,7 +27,7 @@ export const fetchPlugin = (inputCode: string) => {
         return null;
       });
 
-      build.onLoad({ filter: /.*/ }, async (args: any) => {
+      build.onLoad({ filter: /.css$/ }, async (args: any) => {
         const { data, request } = await axios.get(args.path);
 
         const escaped = data
