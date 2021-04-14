@@ -1,18 +1,18 @@
-import axios from "axios";
-import * as esbuild from "esbuild-wasm";
-import localForage from "localforage";
+import axios from 'axios';
+import * as esbuild from 'esbuild-wasm';
+import localForage from 'localforage';
 
 const fileCache = localForage.createInstance({
-  name: "filecache",
+  name: 'filecache',
 });
 
 export const fetchPlugin = (inputCode: string) => {
   return {
-    name: "fetch-plugin",
+    name: 'fetch-plugin',
     setup(build: esbuild.PluginBuild) {
       build.onLoad({ filter: /(^index\.js$)/ }, (args: any) => {
         return {
-          loader: "jsx",
+          loader: 'jsx',
           contents: inputCode,
         };
       });
@@ -31,7 +31,7 @@ export const fetchPlugin = (inputCode: string) => {
         const { data, request } = await axios.get(args.path);
 
         const escaped = data
-          .replace(/\n/g, "")
+          .replace(/\n/g, '')
           .replace(/"/g, '\\"')
           .replace(/'/g, "\\'");
 
@@ -42,9 +42,9 @@ export const fetchPlugin = (inputCode: string) => {
             `;
 
         const result = {
-          loader: "jsx",
+          loader: 'jsx',
           contents,
-          resolveDir: new URL("./", request.responseURL).pathname,
+          resolveDir: new URL('./', request.responseURL).pathname,
         };
 
         await fileCache.setItem(args.path, result);
@@ -56,9 +56,9 @@ export const fetchPlugin = (inputCode: string) => {
         const { data, request } = await axios.get(args.path);
 
         const result = {
-          loader: "jsx",
+          loader: 'jsx',
           contents: data,
-          resolveDir: new URL("./", request.responseURL).pathname,
+          resolveDir: new URL('./', request.responseURL).pathname,
         };
 
         await fileCache.setItem(args.path, result);
