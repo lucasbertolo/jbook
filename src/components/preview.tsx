@@ -7,14 +7,13 @@ interface PreviewProps {
 const html = `
 <html>
   <head>
-    <style>html { background-color: white; }
+    <style>html { background-color: white; } </style>
   </head>
   <body>
     <div id="root"></div>
     <script>
       window.addEventListener(
-        'message',
-        (event) => {
+        'message', (event) => {
           try {
             eval(event.data);
           } catch(err) {
@@ -24,9 +23,7 @@ const html = `
             
             console.error(err);
           }
-        },
-        false
-      );
+        }, false);
     </script>
   </body>
 </html>
@@ -37,16 +34,21 @@ const Preview: React.FC<PreviewProps> = ({ code }) => {
 
   useEffect(() => {
     iframe.current.srcdoc = html;
-    iframe.current.contentWindow.postMessage(code, '*');
+
+    setTimeout(() => {
+      iframe.current.contentWindow.postMessage(code, '*');
+    }, 100);
   }, [code]);
+
+  console.log('code', code.length);
 
   return (
     <div className="preview-wrapper">
       <iframe
+        title="preview"
         ref={iframe}
-        srcDoc={html}
         sandbox="allow-scripts"
-        title="html-render"
+        srcDoc={html}
       />
     </div>
   );
