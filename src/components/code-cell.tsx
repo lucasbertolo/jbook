@@ -8,12 +8,14 @@ import './code-cell.css';
 const CodeCell = () => {
   const [input, setInput] = useState('');
   const [code, setCode] = useState('');
+  const [errorLog, setErrorLog] = useState('');
 
   useEffect(() => {
     const timer = setTimeout(async () => {
       const output = await bundler(input);
 
-      setCode(output);
+      setCode(output.code);
+      setErrorLog(output.err);
     }, 1000);
 
     return () => {
@@ -28,7 +30,7 @@ const CodeCell = () => {
           <CodeEditor initialValue="const test = 1;" onChange={setInput} />
         </Resizable>
 
-        <Preview code={code} />
+        <Preview code={code } errorLog={errorLog} />
       </div>
     </Resizable>
   );

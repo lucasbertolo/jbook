@@ -4,6 +4,8 @@ import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 
 let service: esbuild.Service;
 
+
+
 const bundler = async (rawCode: string) => {
   if (!service) {
     service = await esbuild.startService({
@@ -12,18 +14,22 @@ const bundler = async (rawCode: string) => {
     });
   }
 
-  const builtCode = await service.build({
-    entryPoints: ['index.js'],
-    bundle: true,
-    write: false,
-    plugins: [unpkgPathPlugin(), fetchPlugin(rawCode)],
-    define: {
-      'process.env.NODE_ENV': '"production"',
-      global: 'window',
-    },
-  });
+  try {
+    const builtCode = await service.build({
+      entryPoints: ['index.js'],
+      bundle: true,
+      write: false,
+      plugins: [unpkgPathPlugin(), fetchPlugin(rawCode)],
+      define: {
+        'process.env.NODE_ENV': '"production"',
+        global: 'window',
+      },
+    });
 
-  return builtCode.outputFiles[0].text;
+    return { code: builtCode.outputFiles[0].text, err: '' };
+  } catch (error) {
+    return { code: '', err: error.message as string };
+  }
 };
 
 export default bundler;
