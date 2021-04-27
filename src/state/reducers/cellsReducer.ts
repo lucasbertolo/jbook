@@ -1,3 +1,5 @@
+import produce from 'immer';
+import { getUuid } from '../../lib/getUuid';
 import { ActionType } from '../action-types';
 import { Action } from '../actions';
 import { Cell } from '../cell';
@@ -18,34 +20,69 @@ const initialState: CellState = {
   data: {},
 };
 
-const reducer = (
-  state: CellState = initialState,
-  action: Action
-): CellState => {
+const reducer = produce((state: CellState = initialState, action: Action) => {
   switch (action.type) {
-    case ActionType.UPDATE_CELL:
+    case ActionType.UPDATE_CELL: {
       const { id, content } = action.payload;
 
-      return {
-        ...state,
-        data: {
-          ...state.data,
-          [id]: { ...state.data[id], content: content },
-        },
+      state.data[id].content = content;
+
+      return state;
+    }
+
+    case ActionType.DELETE_CELL: {
+      delete state.data[action.payload];
+
+      state.order = state.order.filter((id) => id !== action.payload);
+
+      return state;
+    }
+
+    case ActionType.MOVE_CELL: {
+      const { id, direction } = action.payload;
+
+      const index = state.order.findIndex((orderId) => orderId === id);
+
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+      if (targetIndex < 0 || targetIndex > state.order.length - 1) {
+        return state;
+      }
+
+      state.order[index] = state.order[targetIndex];
+      state.order[targetIndex] = id;
+
+      return state;
+    }
+
+    case ActionType.INSERT_CELL_BEFORE: {
+      const cell: Cell = {
+        content: '',
+        type: action.payload.type,
+        id: getUuid(),
       };
 
-    case ActionType.DELETE_CELL:
-      return state;
+      state.data[cell.id] = cell;
 
-    case ActionType.MOVE_CELL:
-      return state;
+      const index = state.order.findIndex(
+        (orderId) => orderId === action.payload.id
+      );
 
-    case ActionType.INSERT_CELL_BEFORE:
-      return state;
+      if (index < 0) {
+        state.order.push(cell.id);
 
-    default:
+        return state;
+      }
+
+      state.order.splice(index, 0, cell.id);
+
       return state;
+    }
+
+    default: {
+      return state;
+    }
   }
-};
+});
 
 export default reducer;
