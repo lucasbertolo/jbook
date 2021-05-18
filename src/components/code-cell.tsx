@@ -1,34 +1,35 @@
-import { useEffect, useState } from 'react';
-import bundler from '../bundler';
+import { useEffect } from 'react';
 import { useActions } from '../hooks/use-actions';
 import { Cell } from '../state';
 import './code-cell.css';
 import CodeEditor from './code-editor';
 import Preview from './preview';
 import Resizable from './resizable';
-
+import { useTypedSelector } from '../hooks/use-typed-selector';
 interface CodeCellProps {
   cell: Cell;
 }
 
 const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
-  const { updateCell } = useActions();
+  const { updateCell, createBundle } = useActions();
 
-  const [code, setCode] = useState('');
-  const [errorLog, setErrorLog] = useState('');
+  const bundle = useTypedSelector((state) => state.bundles[cell.id]);
 
   useEffect(() => {
-    const timer = setTimeout(async () => {
-      const output = await bundler(cell.content);
+    if (!bundle) {
+      createBundle(cell.id, cell.content);
+      return;
+    }
 
-      setCode(output.code);
-      setErrorLog(output.err);
+    const timer = setTimeout(async () => {
+      createBundle(cell.id, cell.content);
     }, 1000);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [cell.content]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cell.content, cell.id, createBundle]);
 
   return (
     <Resizable direction="vertical">
@@ -39,8 +40,11 @@ const CodeCell: React.FC<CodeCellProps> = ({ cell }) => {
             onChange={(value) => updateCell(cell.id, value)}
           />
         </Resizable>
-
-        <Preview code={code} errorLog={errorLog} />
+        {!bundle || bundle.loading ? (
+          <div>loading...</div>
+        ) : (
+          <Preview code={bundle.code} errorLog={bundle.err} />
+        )}
       </div>
     </Resizable>
   );
