@@ -4,8 +4,6 @@ import { unpkgPathPlugin } from './plugins/unpkg-path-plugin';
 
 let service: esbuild.Service;
 
-
-
 const bundler = async (rawCode: string) => {
   if (!service) {
     service = await esbuild.startService({
@@ -24,6 +22,8 @@ const bundler = async (rawCode: string) => {
         'process.env.NODE_ENV': '"production"',
         global: 'window',
       },
+      jsxFactory: '_React.createElement',
+      jsxFragment: '_React.Fragment',
     });
 
     return { code: builtCode.outputFiles[0].text, err: '' };
